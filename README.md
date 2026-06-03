@@ -186,4 +186,4 @@ src/
 
 ## License
 
-Private project. See repository owner for usage terms.
+This project is licensed under the [MIT License](LICENSE).
