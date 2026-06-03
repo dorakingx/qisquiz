@@ -17,11 +17,6 @@ export const metadata: Metadata = {
   title: "Qisquiz — Master Qiskit, one quiz at a time.",
   description:
     "Certification-prep practice for the IBM Certified Quantum Computation using Qiskit v2.X Developer exam (C1000-179), with study mode, mock exams, analytics, and original questions.",
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
-  },
 };
 
 export default function RootLayout({
