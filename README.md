@@ -2,7 +2,7 @@
 
 **Master Qiskit, one quiz at a time.**
 
-Qisquiz is a focused Q&A quiz app for mastering [Qiskit v2.X](https://docs.quantum.ibm.com/) and preparing for the **IBM Certified Quantum Computation using Qiskit Developer** exam (**C1000-179**).
+Qisquiz is a focused Q&A quiz app for mastering [Qiskit v2.X](https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-v2x-developer-associate-C9008400) and preparing for the **IBM Certified Quantum Computation using Qiskit Developer** exam (**C1000-179**).
 
 **Live app:** [https://qisquiz.vercel.app](https://qisquiz.vercel.app)
 
