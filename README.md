@@ -149,7 +149,7 @@ Each entry: `title`, `description`, `url`, `category` (`Official` | `Community` 
 
 Qisquiz topics were aligned with these public materials (questions remain original):
 
-- [IBM Qiskit Developer Certification (C1000-179)](https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-developer-v2-C1000-179)
+- [IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate (C9008400)](https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-v2x-developer-associate-C9008400)
 - [Qiskit documentation](https://docs.quantum.ibm.com/)
 - [Qiskit v2.X Certification Exam Tutorial](https://github.com/kibrahim757/qiskit_2x_certification_exam_tutorial)
 - [Qiskit Advocate-created practice exams](https://github.com/qiskit-advocate/qiskit-advocate-library/blob/main/advocate-resources/qiskit-cert-study-resources/advocate_created_practice_exams.md)
