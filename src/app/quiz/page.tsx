@@ -25,9 +25,11 @@ function QuizSession() {
   const sessionLabel =
     retryIds.length > 0
       ? "Retry session"
-      : studyConfig.section === "all"
-        ? "Full quiz"
-        : `Section ${studyConfig.section}`;
+      : studyConfig.mode === "mock"
+        ? "Full mock exam"
+        : studyConfig.sections === "all"
+          ? "Section practice"
+          : `Sections ${studyConfig.sections.join(", ")}`;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
@@ -40,6 +42,9 @@ function QuizSession() {
           {questions.length} question{questions.length === 1 ? "" : "s"}
           {studyConfig.difficulty !== "all"
             ? ` · ${studyConfig.difficulty}`
+            : ""}
+          {studyConfig.count !== "all" && studyConfig.mode !== "mock"
+            ? ` · ${studyConfig.count} selected`
             : ""}
           {studyConfig.order === "random" ? " · randomized" : ""}
         </p>

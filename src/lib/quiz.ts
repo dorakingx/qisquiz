@@ -1,11 +1,22 @@
 import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
 
+const MOCK_EXAM_SECTION_TARGETS: Record<number, number> = {
+  1: 11,
+  2: 8,
+  3: 12,
+  4: 10,
+  5: 8,
+  6: 8,
+  7: 7,
+  8: 4,
+};
+
 export function filterQuestions(
   questions: QuizQuestion[],
-  config: Pick<StudyConfig, "section" | "difficulty">,
+  config: Pick<StudyConfig, "sections" | "difficulty">,
 ): QuizQuestion[] {
   return questions.filter((q) => {
-    if (config.section !== "all" && q.section !== config.section) {
+    if (config.sections !== "all" && !config.sections.includes(q.section)) {
       return false;
     }
     if (config.difficulty !== "all" && q.difficulty !== config.difficulty) {
@@ -34,6 +45,44 @@ export function orderQuestions(
   return shuffled;
 }
 
+function limitQuestions(
+  questions: QuizQuestion[],
+  count: StudyConfig["count"],
+): QuizQuestion[] {
+  if (count === "all") return questions;
+  return questions.slice(0, count);
+}
+
+function sampleQuestions(
+  questions: QuizQuestion[],
+  count: number,
+): QuizQuestion[] {
+  return orderQuestions(questions, "random").slice(0, count);
+}
+
+function buildMockExamSession(questions: QuizQuestion[]): QuizQuestion[] {
+  const selected: QuizQuestion[] = [];
+  const selectedIds = new Set<string>();
+
+  for (const [sectionValue, target] of Object.entries(
+    MOCK_EXAM_SECTION_TARGETS,
+  )) {
+    const section = Number.parseInt(sectionValue, 10);
+    const sectionQuestions = questions.filter((q) => q.section === section);
+    for (const question of sampleQuestions(sectionQuestions, target)) {
+      selected.push(question);
+      selectedIds.add(question.id);
+    }
+  }
+
+  if (selected.length < 68) {
+    const remaining = questions.filter((q) => !selectedIds.has(q.id));
+    selected.push(...sampleQuestions(remaining, 68 - selected.length));
+  }
+
+  return orderQuestions(selected.slice(0, 68), "random");
+}
+
 export function buildQuizSession(
   questions: QuizQuestion[],
   config: StudyConfig,
@@ -45,8 +94,12 @@ export function buildQuizSession(
     return orderQuestions(retryQuestions, config.order);
   }
 
+  if (config.mode === "mock") {
+    return buildMockExamSession(questions);
+  }
+
   const filtered = filterQuestions(questions, config);
-  return orderQuestions(filtered, config.order);
+  return limitQuestions(orderQuestions(filtered, config.order), config.count);
 }
 
 export function getMissedQuestions(
@@ -60,9 +113,17 @@ export function getMissedQuestions(
 }
 
 export function parseStudyConfig(searchParams: URLSearchParams): StudyConfig {
-  const sectionParam = searchParams.get("section") ?? "all";
-  const section =
-    sectionParam === "all" ? "all" : Number.parseInt(sectionParam, 10);
+  const mode = searchParams.get("mode") === "mock" ? "mock" : "section";
+
+  const sectionsParam =
+    searchParams.get("sections") ?? searchParams.get("section") ?? "all";
+  const sections =
+    sectionsParam === "all"
+      ? "all"
+      : sectionsParam
+          .split(",")
+          .map((value) => Number.parseInt(value, 10))
+          .filter((value) => value >= 1 && value <= 8);
 
   const difficultyParam = searchParams.get("difficulty") ?? "all";
   const difficulty =
@@ -75,10 +136,18 @@ export function parseStudyConfig(searchParams: URLSearchParams): StudyConfig {
   const orderParam = searchParams.get("order") ?? "sequential";
   const order = orderParam === "random" ? "random" : "sequential";
 
+  const countParam = searchParams.get("count") ?? (mode === "mock" ? "68" : "all");
+  let count: StudyConfig["count"] = "all";
+  if (countParam === "10") count = 10;
+  if (countParam === "20") count = 20;
+  if (countParam === "40") count = 40;
+  if (countParam === "68") count = 68;
+
   return {
-    section:
-      section === "all" || (section >= 1 && section <= 8) ? section : "all",
+    mode,
+    sections: sections === "all" || sections.length > 0 ? sections : "all",
     difficulty,
+    count,
     order,
   };
 }
@@ -94,11 +163,17 @@ export function buildQuizUrl(
   retryIds?: string[],
 ): string {
   const params = new URLSearchParams();
-  if (config.section !== "all") {
-    params.set("section", String(config.section));
+  if (config.mode !== "section") {
+    params.set("mode", config.mode);
+  }
+  if (config.sections !== "all") {
+    params.set("sections", config.sections.join(","));
   }
   if (config.difficulty !== "all") {
     params.set("difficulty", config.difficulty);
+  }
+  if (config.count !== "all" && config.mode !== "mock") {
+    params.set("count", String(config.count));
   }
   if (config.order !== "sequential") {
     params.set("order", config.order);

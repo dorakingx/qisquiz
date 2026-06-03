@@ -1,4 +1,10 @@
 import Link from "next/link";
+import { QUIZ_QUESTIONS } from "@/data/questions";
+
+const codeQuestionCount = QUIZ_QUESTIONS.filter((q) => q.code).length;
+const hardQuestionCount = QUIZ_QUESTIONS.filter(
+  (q) => q.difficulty === "hard",
+).length;
 
 export default function Home() {
   return (
@@ -14,23 +20,23 @@ export default function Home() {
           Master Qiskit, one quiz at a time.
         </p>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-          Qisquiz is a focused quiz app for mastering Qiskit v2.X and preparing
-          for the IBM Certified Quantum Computation using Qiskit Developer exam.
+          Qisquiz is a certification study app for IBM Exam C1000-179:
+          Fundamentals of Quantum Computing Using Qiskit v2.X Developer.
         </p>
       </div>
 
       <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link
-          href="/quiz"
+          href="/topics"
           className="rounded-lg bg-cyan-600 px-6 py-3 text-center text-sm font-semibold text-zinc-950 transition-colors hover:bg-cyan-500"
         >
-          Start quiz
+          Section practice
         </Link>
         <Link
-          href="/topics"
+          href="/quiz?mode=mock"
           className="rounded-lg border border-zinc-700 px-6 py-3 text-center text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
         >
-          Browse topics
+          Full mock exam
         </Link>
         <Link
           href="/resources"
@@ -38,6 +44,27 @@ export default function Home() {
         >
           Resources
         </Link>
+      </div>
+
+      <div className="mt-12 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-4">
+          <p className="font-mono text-2xl font-semibold text-zinc-100">
+            {QUIZ_QUESTIONS.length}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">Original questions</p>
+        </div>
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-4">
+          <p className="font-mono text-2xl font-semibold text-zinc-100">
+            {codeQuestionCount}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">Code-based questions</p>
+        </div>
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-4">
+          <p className="font-mono text-2xl font-semibold text-zinc-100">
+            {hardQuestionCount}
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">Hard questions</p>
+        </div>
       </div>
 
       <div className="mt-16 rounded-lg border border-zinc-800 bg-zinc-900/30 px-4 py-4 text-sm leading-relaxed text-zinc-500">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
 import { buildQuizUrl } from "@/lib/quiz";
+import { EXAM_SECTIONS } from "@/types/quiz";
 
 type ScoreSummaryProps = {
   answers: QuizAnswer[];
@@ -26,10 +27,30 @@ export function ScoreSummary({
   const missedQuestions = questions.filter((q) => missedIds.has(q.id));
 
   const retryUrl = buildQuizUrl(
-    studyConfig,
+    { ...studyConfig, mode: "section", count: "all" },
     missedQuestions.map((q) => q.id),
   );
   const restartUrl = buildQuizUrl(studyConfig);
+  const sectionStats = EXAM_SECTIONS.map((section) => {
+    const sectionQuestions = questions.filter((q) => q.section === section.number);
+    const sectionAnswers = answers.filter((answer) =>
+      sectionQuestions.some((q) => q.id === answer.questionId),
+    );
+    const sectionCorrect = sectionAnswers.filter((answer) => answer.isCorrect).length;
+    const sectionAccuracy =
+      sectionAnswers.length === 0
+        ? null
+        : Math.round((sectionCorrect / sectionAnswers.length) * 100);
+    return {
+      ...section,
+      attempted: sectionAnswers.length,
+      correct: sectionCorrect,
+      accuracy: sectionAccuracy,
+    };
+  }).filter((section) => section.attempted > 0);
+  const weakSections = sectionStats
+    .filter((section) => section.accuracy !== null && section.accuracy < 75)
+    .sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0));
 
   return (
     <div className="w-full max-w-3xl space-y-8">
@@ -88,6 +109,61 @@ export function ScoreSummary({
         </div>
       </div>
 
+      {sectionStats.length > 1 ? (
+        <section className="card">
+          <h3 className="text-lg font-semibold text-zinc-100">
+            Weak-area review
+          </h3>
+          <div className="mt-4 space-y-3">
+            {sectionStats
+              .sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0))
+              .map((section) => (
+                <div
+                  key={section.number}
+                  className="flex flex-col gap-2 rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-zinc-200">
+                      Section {section.number}: {section.title}
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {section.correct} / {section.attempted} correct
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`font-mono text-sm ${
+                        (section.accuracy ?? 0) < 75
+                          ? "text-amber-300"
+                          : "text-emerald-300"
+                      }`}
+                    >
+                      {section.accuracy}%
+                    </span>
+                    <Link
+                      href={buildQuizUrl({
+                        mode: "section",
+                        sections: [section.number],
+                        difficulty: "all",
+                        count: 10,
+                        order: "random",
+                      })}
+                      className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+                    >
+                      Review
+                    </Link>
+                  </div>
+                </div>
+              ))}
+          </div>
+          {weakSections.length === 0 ? (
+            <p className="mt-4 text-sm text-emerald-400">
+              No weak sections under 75% in this session.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
       {missedQuestions.length > 0 ? (
         <section>
           <h3 className="mb-4 text-lg font-semibold text-zinc-100">
@@ -116,6 +192,11 @@ export function ScoreSummary({
                   <p className="mt-3 text-sm leading-relaxed text-zinc-400">
                     {q.explanation}
                   </p>
+                  {q.commonMistake ? (
+                    <p className="mt-3 text-sm leading-relaxed text-amber-300/90">
+                      Common mistake: {q.commonMistake}
+                    </p>
+                  ) : null}
                 </li>
               );
             })}

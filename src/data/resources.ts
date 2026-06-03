@@ -11,7 +11,7 @@ export const STUDY_RESOURCES: StudyResource[] = [
   {
     title: "IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate",
     description:
-      "Official IBM certification page for the Qiskit v2.X Developer Associate credential (exam C1000-179).",
+      "Official IBM certification page for the Qiskit v2.X Developer Associate credential. The exam code is C1000-179; C9008400 is the certification page identifier.",
     url: "https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-v2x-developer-associate-C9008400",
     category: "Official",
   },

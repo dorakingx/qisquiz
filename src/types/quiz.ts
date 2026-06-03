@@ -13,6 +13,8 @@ export type QuizQuestion = {
   tags: string[];
   sourceReference?: string;
   relatedDocsUrl?: string;
+  examSkill?: string;
+  commonMistake?: string;
 };
 
 export type QuizAnswer = {
@@ -22,8 +24,10 @@ export type QuizAnswer = {
 };
 
 export type StudyConfig = {
-  section: number | "all";
+  mode: "section" | "mock";
+  sections: number[] | "all";
   difficulty: Difficulty | "all";
+  count: 10 | 20 | 40 | 68 | "all";
   order: "sequential" | "random";
 };
 

@@ -120,10 +120,25 @@ export function QuizCard({
           <p className="mt-2 text-sm leading-relaxed text-zinc-300">
             {question.explanation}
           </p>
+          {question.commonMistake ? (
+            <p className="mt-3 text-sm leading-relaxed text-amber-200/90">
+              Common mistake: {question.commonMistake}
+            </p>
+          ) : null}
           {question.sourceReference ? (
             <p className="mt-2 text-xs text-zinc-500">
               Reference: {question.sourceReference}
             </p>
+          ) : null}
+          {question.relatedDocsUrl ? (
+            <a
+              href={question.relatedDocsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-xs font-medium text-accent hover:underline"
+            >
+              Open related docs
+            </a>
           ) : null}
         </div>
       ) : null}
