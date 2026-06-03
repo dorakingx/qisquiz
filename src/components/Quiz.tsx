@@ -1,42 +1,43 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { QUIZ_QUESTIONS } from "@/data/questions";
-import { FeedbackPanel } from "./FeedbackPanel";
-import { QuestionView } from "./QuestionView";
-import { ResultsSummary } from "./ResultsSummary";
+import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
+import { QuizCard } from "./QuizCard";
+import { ScoreSummary } from "./ScoreSummary";
 
-export function Quiz() {
-  const total = QUIZ_QUESTIONS.length;
+type QuizProps = {
+  questions: QuizQuestion[];
+  studyConfig: StudyConfig;
+};
+
+export function Quiz({ questions, studyConfig }: QuizProps) {
+  const total = questions.length;
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [answers, setAnswers] = useState<QuizAnswer[]>([]);
 
   const question = useMemo(
-    () => QUIZ_QUESTIONS[currentIndex],
-    [currentIndex],
+    () => questions[currentIndex],
+    [questions, currentIndex],
   );
 
-  const reset = useCallback(() => {
-    setCurrentIndex(0);
-    setScore(0);
-    setSelectedChoiceId(null);
-    setShowFeedback(false);
-    setFinished(false);
-  }, []);
-
-  const handleSelectChoice = useCallback(
-    (choiceId: string) => {
-      if (showFeedback) return;
-      setSelectedChoiceId(choiceId);
+  const handleSelect = useCallback(
+    (index: number) => {
+      if (showFeedback || !question) return;
+      setSelectedIndex(index);
       setShowFeedback(true);
-      if (choiceId === question.correctChoiceId) {
-        setScore((s) => s + 1);
-      }
+      setAnswers((prev) => [
+        ...prev,
+        {
+          questionId: question.id,
+          selectedIndex: index,
+          isCorrect: index === question.correctAnswerIndex,
+        },
+      ]);
     },
-    [question.correctChoiceId, showFeedback],
+    [question, showFeedback],
   );
 
   const handleNext = useCallback(() => {
@@ -46,35 +47,44 @@ export function Quiz() {
       return;
     }
     setCurrentIndex((i) => i + 1);
-    setSelectedChoiceId(null);
+    setSelectedIndex(null);
     setShowFeedback(false);
   }, [currentIndex, showFeedback, total]);
 
-  if (finished) {
-    return <ResultsSummary score={score} total={total} onRetry={reset} />;
+  if (total === 0) {
+    return (
+      <div className="card text-center">
+        <p className="text-zinc-300">No questions match your study filters.</p>
+        <a
+          href="/topics"
+          className="mt-4 inline-block text-sm text-accent hover:underline"
+        >
+          Adjust topics and filters
+        </a>
+      </div>
+    );
   }
 
-  const answeredCorrectly =
-    selectedChoiceId !== null && selectedChoiceId === question.correctChoiceId;
+  if (finished) {
+    return (
+      <ScoreSummary
+        answers={answers}
+        questions={questions}
+        studyConfig={studyConfig}
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-3xl">
-      <QuestionView
+      <QuizCard
         question={question}
         questionNumber={currentIndex + 1}
         totalQuestions={total}
-        selectedChoiceId={selectedChoiceId}
+        selectedIndex={selectedIndex}
         showFeedback={showFeedback}
-        correctChoiceId={question.correctChoiceId}
-        onSelectChoice={handleSelectChoice}
+        onSelect={handleSelect}
       />
-
-      {showFeedback && selectedChoiceId !== null ? (
-        <FeedbackPanel
-          isCorrect={answeredCorrectly}
-          explanation={question.explanation}
-        />
-      ) : null}
 
       {showFeedback ? (
         <div className="mt-8 flex justify-end">

@@ -24,3 +24,23 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+.card {
+  @apply rounded-xl border border-zinc-800 bg-zinc-900/40 p-5 shadow-xl shadow-black/20 sm:p-6;
+}
+
+.badge-section {
+  @apply inline-flex rounded-md bg-cyan-950/80 px-2.5 py-1 text-xs font-medium text-cyan-300 ring-1 ring-cyan-500/30;
+}
+
+.badge-easy {
+  @apply inline-flex rounded-md bg-emerald-950/80 px-2.5 py-1 text-xs font-medium capitalize text-emerald-300 ring-1 ring-emerald-500/30;
+}
+
+.badge-medium {
+  @apply inline-flex rounded-md bg-amber-950/80 px-2.5 py-1 text-xs font-medium capitalize text-amber-300 ring-1 ring-amber-500/30;
+}
+
+.badge-hard {
+  @apply inline-flex rounded-md bg-rose-950/80 px-2.5 py-1 text-xs font-medium capitalize text-rose-300 ring-1 ring-rose-500/30;
+}

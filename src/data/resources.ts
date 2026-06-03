@@ -1,0 +1,46 @@
+export type ResourceCategory = "Official" | "Community" | "Practice" | "Slides";
+
+export type StudyResource = {
+  title: string;
+  description: string;
+  url: string;
+  category: ResourceCategory;
+};
+
+export const STUDY_RESOURCES: StudyResource[] = [
+  {
+    title: "IBM Qiskit Developer Certification",
+    description:
+      "Official IBM certification page for the Quantum Computation using Qiskit Developer credential, including exam C1000-179 overview.",
+    url: "https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-developer-v2-C1000-179",
+    category: "Official",
+  },
+  {
+    title: "Qiskit Documentation",
+    description:
+      "Primary reference for Qiskit APIs, Runtime, primitives, transpilation, and OpenQASM interoperability.",
+    url: "https://docs.quantum.ibm.com/",
+    category: "Official",
+  },
+  {
+    title: "Qiskit v2.X Certification Exam Tutorial",
+    description:
+      "Community tutorial repository covering Qiskit v2.X concepts aligned with the developer certification exam.",
+    url: "https://github.com/kibrahim757/qiskit_2x_certification_exam_tutorial",
+    category: "Community",
+  },
+  {
+    title: "Qiskit Advocate-Created Practice Exams",
+    description:
+      "Curated list of advocate-created practice materials and study references for Qiskit certification prep.",
+    url: "https://github.com/qiskit-advocate/qiskit-advocate-library/blob/main/advocate-resources/qiskit-cert-study-resources/advocate_created_practice_exams.md",
+    category: "Practice",
+  },
+  {
+    title: "Qiskit Study Group Kickoff Slides",
+    description:
+      "PDF slides from the Qiskit Study Group kickoff covering certification domains and study strategies.",
+    url: "https://github.com/qiskit-advocate/qiskit-advocate-library/blob/main/advocate-resources/qiskit-cert-study-resources/SG_kickoff_slides.pdf",
+    category: "Slides",
+  },
+];

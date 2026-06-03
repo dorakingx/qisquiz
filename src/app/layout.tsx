@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Qiskit v2.X Developer — Practice Quiz",
+  title: "Qisquiz — Master Qiskit, one quiz at a time.",
   description:
-    "Multiple-choice practice for the IBM Certified Quantum Computation using Qiskit v2.X Developer exam: Runtime, V2 primitives, and OpenQASM 3.",
+    "Focused Q&A practice for the IBM Certified Quantum Computation using Qiskit v2.X Developer exam (C1000-179). Original questions on Runtime, primitives, circuits, and OpenQASM 3.",
 };
 
 export default function RootLayout({
@@ -28,8 +29,9 @@ export default function RootLayout({
       lang="en"
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background font-sans text-foreground">
-        {children}
+      <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
+        <SiteHeader />
+        <main className="flex flex-1 flex-col">{children}</main>
       </body>
     </html>
   );
