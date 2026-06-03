@@ -13,13 +13,16 @@ const MOCK_EXAM_SECTION_TARGETS: Record<number, number> = {
 
 export function filterQuestions(
   questions: QuizQuestion[],
-  config: Pick<StudyConfig, "sections" | "difficulty">,
+  config: Pick<StudyConfig, "sections" | "difficulty" | "tag">,
 ): QuizQuestion[] {
   return questions.filter((q) => {
     if (config.sections !== "all" && !config.sections.includes(q.section)) {
       return false;
     }
     if (config.difficulty !== "all" && q.difficulty !== config.difficulty) {
+      return false;
+    }
+    if (config.tag && !q.tags.includes(config.tag)) {
       return false;
     }
     return true;
@@ -135,6 +138,7 @@ export function parseStudyConfig(searchParams: URLSearchParams): StudyConfig {
 
   const orderParam = searchParams.get("order") ?? "sequential";
   const order = orderParam === "random" ? "random" : "sequential";
+  const tag = searchParams.get("tag") ?? undefined;
 
   const countParam = searchParams.get("count") ?? (mode === "mock" ? "68" : "all");
   let count: StudyConfig["count"] = "all";
@@ -149,6 +153,7 @@ export function parseStudyConfig(searchParams: URLSearchParams): StudyConfig {
     difficulty,
     count,
     order,
+    tag,
   };
 }
 
@@ -177,6 +182,9 @@ export function buildQuizUrl(
   }
   if (config.order !== "sequential") {
     params.set("order", config.order);
+  }
+  if (config.tag) {
+    params.set("tag", config.tag);
   }
   if (retryIds && retryIds.length > 0) {
     params.set("retry", retryIds.join(","));

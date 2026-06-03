@@ -33,10 +33,16 @@ export default function Home() {
           Section practice
         </Link>
         <Link
-          href="/quiz?mode=mock"
+          href="/mock-exam"
           className="rounded-lg border border-zinc-700 px-6 py-3 text-center text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
         >
           Full mock exam
+        </Link>
+        <Link
+          href="/dashboard"
+          className="rounded-lg border border-zinc-700 px-6 py-3 text-center text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+        >
+          Dashboard
         </Link>
         <Link
           href="/resources"

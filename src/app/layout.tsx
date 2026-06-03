@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Qisquiz — Master Qiskit, one quiz at a time.",
   description:
-    "Focused Q&A practice for the IBM Certified Quantum Computation using Qiskit v2.X Developer exam (C1000-179). Original questions on Runtime, primitives, circuits, and OpenQASM 3.",
+    "Certification-prep practice for the IBM Certified Quantum Computation using Qiskit v2.X Developer exam (C1000-179), with study mode, mock exams, analytics, and original questions.",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.png",

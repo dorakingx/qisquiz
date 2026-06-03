@@ -10,7 +10,9 @@ type QuizCardProps = {
   totalQuestions: number;
   selectedIndex: number | null;
   showFeedback: boolean;
+  bookmarked?: boolean;
   onSelect: (index: number) => void;
+  onToggleBookmark?: () => void;
 };
 
 function detectCodeLanguage(code: string): "python" | "openqasm" {
@@ -34,7 +36,9 @@ export function QuizCard({
   totalQuestions,
   selectedIndex,
   showFeedback,
+  bookmarked = false,
   onSelect,
+  onToggleBookmark,
 }: QuizCardProps) {
   return (
     <article className="card">
@@ -51,6 +55,17 @@ export function QuizCard({
           Question {questionNumber} / {totalQuestions}
         </span>
       </header>
+
+      {onToggleBookmark ? (
+        <button
+          type="button"
+          onClick={onToggleBookmark}
+          className="mb-4 rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+          aria-pressed={bookmarked}
+        >
+          {bookmarked ? "Bookmarked" : "Bookmark"}
+        </button>
+      ) : null}
 
       {question.tags.length > 0 ? (
         <div className="mb-4 flex flex-wrap gap-1.5">

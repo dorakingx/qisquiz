@@ -1,5 +1,15 @@
 import { ResourceCard } from "@/components/ResourceCard";
-import { STUDY_RESOURCES } from "@/data/resources";
+import { STUDY_RESOURCES, type ResourceCategory } from "@/data/resources";
+
+const CATEGORY_ORDER: ResourceCategory[] = [
+  "Official IBM / Qiskit resources",
+  "Qiskit API documentation",
+  "Runtime / Sampler / Estimator references",
+  "OpenQASM references",
+  "Community tutorials",
+  "Practice exams",
+  "Slides",
+];
 
 export default function ResourcesPage() {
   return (
@@ -18,10 +28,26 @@ export default function ResourcesPage() {
         </p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {STUDY_RESOURCES.map((resource) => (
-          <ResourceCard key={resource.url} resource={resource} />
-        ))}
+      <div className="space-y-10">
+        {CATEGORY_ORDER.map((category) => {
+          const resources = STUDY_RESOURCES.filter(
+            (resource) => resource.category === category,
+          );
+          if (resources.length === 0) return null;
+
+          return (
+            <section key={category}>
+              <h2 className="mb-4 text-lg font-semibold text-zinc-100">
+                {category}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {resources.map((resource) => (
+                  <ResourceCard key={resource.url} resource={resource} />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </div>
   );

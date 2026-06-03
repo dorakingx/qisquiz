@@ -15,6 +15,11 @@ export type QuizQuestion = {
   relatedDocsUrl?: string;
   examSkill?: string;
   commonMistake?: string;
+  estimatedTimeSeconds?: number;
+  concept?: string;
+  objective?: string;
+  qiskitVersion?: string;
+  lastReviewedAt?: string;
 };
 
 export type QuizAnswer = {
@@ -29,12 +34,51 @@ export type StudyConfig = {
   difficulty: Difficulty | "all";
   count: 10 | 20 | 40 | 68 | "all";
   order: "sequential" | "random";
+  tag?: string;
 };
 
 export type ExamSection = {
   number: number;
   title: string;
   description: string;
+};
+
+export type QuestionPerformance = {
+  questionId: string;
+  attempts: number;
+  correct: number;
+  incorrect: number;
+  lastSelectedIndex: number;
+  lastAnsweredAt: string;
+};
+
+export type MockExamAttempt = {
+  id: string;
+  completedAt: string;
+  questionIds: string[];
+  markedQuestionIds: string[];
+  answers: QuizAnswer[];
+  score: number;
+  total: number;
+  percentage: number;
+  durationSeconds: number;
+  submittedByTimeout: boolean;
+};
+
+export type StudyProgress = {
+  version: 1;
+  answeredQuestionIds: string[];
+  missedQuestionIds: string[];
+  bookmarkedQuestionIds: string[];
+  questionHistory: Record<string, QuestionPerformance>;
+  sectionAccuracy: Record<string, { correct: number; total: number; accuracy: number }>;
+  tagAccuracy: Record<string, { correct: number; total: number; accuracy: number }>;
+  lastSelectedSection: number | "all";
+  lastSelectedDifficulty: Difficulty | "all";
+  mockExamAttempts: MockExamAttempt[];
+  bestScore: number;
+  latestScore: number;
+  updatedAt: string;
 };
 
 export const EXAM_SECTIONS: ExamSection[] = [

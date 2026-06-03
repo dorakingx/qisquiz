@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
 import { buildQuizUrl } from "@/lib/quiz";
+import { clearProgress } from "@/lib/progress";
 import { EXAM_SECTIONS } from "@/types/quiz";
 
 type ScoreSummaryProps = {
@@ -31,6 +33,7 @@ export function ScoreSummary({
     missedQuestions.map((q) => q.id),
   );
   const restartUrl = buildQuizUrl(studyConfig);
+  const [progressCleared, setProgressCleared] = useState(false);
   const sectionStats = EXAM_SECTIONS.map((section) => {
     const sectionQuestions = questions.filter((q) => q.section === section.number);
     const sectionAnswers = answers.filter((answer) =>
@@ -51,6 +54,17 @@ export function ScoreSummary({
   const weakSections = sectionStats
     .filter((section) => section.accuracy !== null && section.accuracy < 75)
     .sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0));
+  const missedTags = Array.from(
+    new Set(missedQuestions.flatMap((question) => question.tags)),
+  ).slice(0, 10);
+  const missedDifficulties = Array.from(
+    new Set(missedQuestions.map((question) => question.difficulty)),
+  );
+
+  function handleClearProgress() {
+    clearProgress();
+    setProgressCleared(true);
+  }
 
   return (
     <div className="w-full max-w-3xl space-y-8">
@@ -106,8 +120,61 @@ export function ScoreSummary({
           >
             Browse topics
           </Link>
+          <button
+            type="button"
+            onClick={handleClearProgress}
+            className="rounded-lg border border-rose-900/70 px-5 py-3 text-center text-sm font-semibold text-rose-200 transition-colors hover:bg-rose-950/30"
+          >
+            Clear progress
+          </button>
         </div>
+        {progressCleared ? (
+          <p className="mt-4 text-sm text-rose-200">
+            Local progress has been cleared.
+          </p>
+        ) : null}
       </div>
+
+      {missedQuestions.length > 0 ? (
+        <section className="card">
+          <h3 className="text-lg font-semibold text-zinc-100">
+            Targeted retry
+          </h3>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {missedDifficulties.map((difficulty) => (
+              <Link
+                key={difficulty}
+                href={buildQuizUrl({
+                  mode: "section",
+                  sections: "all",
+                  difficulty,
+                  count: 10,
+                  order: "random",
+                })}
+                className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold capitalize text-zinc-200 transition-colors hover:bg-zinc-800"
+              >
+                Retry {difficulty}
+              </Link>
+            ))}
+            {missedTags.map((tag) => (
+              <Link
+                key={tag}
+                href={buildQuizUrl({
+                  mode: "section",
+                  sections: "all",
+                  difficulty: "all",
+                  count: 10,
+                  order: "random",
+                  tag,
+                })}
+                className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+              >
+                {tag}
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {sectionStats.length > 1 ? (
         <section className="card">
@@ -196,6 +263,16 @@ export function ScoreSummary({
                     <p className="mt-3 text-sm leading-relaxed text-amber-300/90">
                       Common mistake: {q.commonMistake}
                     </p>
+                  ) : null}
+                  {q.relatedDocsUrl ? (
+                    <a
+                      href={q.relatedDocsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-block text-xs font-medium text-accent hover:underline"
+                    >
+                      Open related docs
+                    </a>
                   ) : null}
                 </li>
               );

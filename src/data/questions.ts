@@ -10,6 +10,9 @@ type QuestionSeed = {
   examSkill: string;
   commonMistake?: string;
   relatedDocsUrl?: string;
+  estimatedTimeSeconds?: number;
+  concept?: string;
+  objective?: string;
 };
 
 type SectionBank = {
@@ -1119,6 +1122,12 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = Object.entries(SECTION_BANK).flatM
         relatedDocsUrl: seed.relatedDocsUrl ?? sectionBank.docsUrl,
         examSkill: seed.examSkill,
         commonMistake: seed.commonMistake,
+        estimatedTimeSeconds:
+          seed.estimatedTimeSeconds ??
+          (seed.difficulty === "hard" ? 90 : seed.difficulty === "medium" ? 70 : 45),
+        concept: seed.concept ?? seed.tags[0],
+        objective: seed.objective ?? seed.examSkill,
+        qiskitVersion: "2.x",
       };
     });
   },

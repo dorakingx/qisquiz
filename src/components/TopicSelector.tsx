@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { QUIZ_QUESTIONS } from "@/data/questions";
 import { buildQuizUrl, countQuestionsBySection } from "@/lib/quiz";
+import { loadProgress } from "@/lib/progress";
 import type { Difficulty, StudyConfig } from "@/types/quiz";
 import { EXAM_SECTIONS } from "@/types/quiz";
 
@@ -15,6 +16,16 @@ export function TopicSelector() {
   const [difficulty, setDifficulty] = useState<Difficulty | "all">("all");
   const [count, setCount] = useState<StudyConfig["count"]>(20);
   const [order, setOrder] = useState<StudyConfig["order"]>("sequential");
+
+  useEffect(() => {
+    const progress = loadProgress();
+    setSections(
+      progress.lastSelectedSection === "all"
+        ? "all"
+        : [progress.lastSelectedSection],
+    );
+    setDifficulty(progress.lastSelectedDifficulty);
+  }, []);
 
   const matchingCount = QUIZ_QUESTIONS.filter((q) => {
     if (sections !== "all" && !sections.includes(q.section)) return false;
@@ -50,15 +61,7 @@ export function TopicSelector() {
   }
 
   function handleMockExam() {
-    router.push(
-      buildQuizUrl({
-        mode: "mock",
-        sections: "all",
-        difficulty: "all",
-        count: 68,
-        order: "random",
-      }),
-    );
+    router.push("/mock-exam");
   }
 
   return (

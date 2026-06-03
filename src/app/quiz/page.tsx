@@ -46,6 +46,7 @@ function QuizSession() {
           {studyConfig.count !== "all" && studyConfig.mode !== "mock"
             ? ` · ${studyConfig.count} selected`
             : ""}
+          {studyConfig.tag ? ` · ${studyConfig.tag}` : ""}
           {studyConfig.order === "random" ? " · randomized" : ""}
         </p>
       </header>

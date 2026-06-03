@@ -1,7 +1,15 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
+import type { StudyProgress } from "@/types/quiz";
+import {
+  createEmptyProgress,
+  loadProgress,
+  recordStudyAnswer,
+  recordStudyPreference,
+  toggleBookmark,
+} from "@/lib/progress";
 import { QuizCard } from "./QuizCard";
 import { ScoreSummary } from "./ScoreSummary";
 
@@ -17,6 +25,23 @@ export function Quiz({ questions, studyConfig }: QuizProps) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [finished, setFinished] = useState(false);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  const [progress, setProgress] = useState<StudyProgress>(createEmptyProgress);
+
+  useEffect(() => {
+    const stored = loadProgress();
+    setProgress(stored);
+    const selectedSection =
+      studyConfig.sections === "all" || studyConfig.sections.length !== 1
+        ? "all"
+        : studyConfig.sections[0];
+    setProgress(
+      recordStudyPreference(
+        stored,
+        selectedSection,
+        studyConfig.difficulty,
+      ),
+    );
+  }, [studyConfig.difficulty, studyConfig.sections]);
 
   const question = useMemo(
     () => questions[currentIndex],
@@ -28,6 +53,7 @@ export function Quiz({ questions, studyConfig }: QuizProps) {
       if (showFeedback || !question) return;
       setSelectedIndex(index);
       setShowFeedback(true);
+      setProgress((prev) => recordStudyAnswer(prev, question, index));
       setAnswers((prev) => [
         ...prev,
         {
@@ -50,6 +76,11 @@ export function Quiz({ questions, studyConfig }: QuizProps) {
     setSelectedIndex(null);
     setShowFeedback(false);
   }, [currentIndex, showFeedback, total]);
+
+  const handleToggleBookmark = useCallback(() => {
+    if (!question) return;
+    setProgress((prev) => toggleBookmark(prev, question.id));
+  }, [question]);
 
   if (total === 0) {
     return (
@@ -83,7 +114,9 @@ export function Quiz({ questions, studyConfig }: QuizProps) {
         totalQuestions={total}
         selectedIndex={selectedIndex}
         showFeedback={showFeedback}
+        bookmarked={progress.bookmarkedQuestionIds.includes(question.id)}
         onSelect={handleSelect}
+        onToggleBookmark={handleToggleBookmark}
       />
 
       {showFeedback ? (
