@@ -1,239 +1,209 @@
 # Qisquiz
 
-**Master Qiskit, one quiz at a time.**
+A study app for **IBM exam C1000-179: Fundamentals of Quantum Computing Using
+Qiskit v2.X Developer**. Practise by section, or sit a full-length mock exam
+under real conditions.
 
-Qisquiz is a certification-prep app for the **IBM Certified Quantum Computation using Qiskit v2.X Developer - Associate** exam (**C1000-179**).
+Live: <https://qisquiz.vercel.app/>
 
-**Live app:** [https://qisquiz.vercel.app](https://qisquiz.vercel.app)
+> Qisquiz is an independent study tool. It is not affiliated with, endorsed by,
+> or sponsored by IBM. Every question is original and written for learning; none
+> is taken from, reconstructed from, or predictive of the real exam. A passing
+> result here is an unofficial estimate, not a forecast.
 
-## Disclaimer
+## What it does
 
-Qisquiz is an **independent study tool** and is **not affiliated with IBM or Qiskit**. All questions are original and created for learning purposes only. They are not copied from official exams, exam dumps, paid dumps, or copyrighted practice materials.
+- **Section practice** across all eight exam sections, filterable by difficulty,
+  tag, and question type.
+- **Mock exam** matching the published exam configuration, with a real timer,
+  mark-for-review, resume after a refresh, and a raw-score result.
+- **Review** of every missed question, including the original code block, your
+  answer, the key, an explanation that addresses the wrong options, and a link
+  to the exact documentation page behind the question.
+- **Dashboard** tracking coverage and accuracy, kept in this browser only.
 
-## Tech Stack
+## Exam configuration
 
-| Layer | Choice |
+Verified against the [official IBM certification page](https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-v2x-developer-associate-C9008400)
+on **2026-08-18**:
+
+| | |
 | --- | --- |
-| Framework | [Next.js 15](https://nextjs.org/) App Router |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Syntax highlighting | prism-react-renderer |
-| Persistence | Browser LocalStorage |
-| Deployment | Vercel |
+| Exam code | C1000-179 |
+| Questions | 68 |
+| Questions to pass | 47 |
+| Time allowed | 90 minutes |
 
-## Features
+**The pass criterion is a raw score, not a percentage.** 47 of 68 is 69.1%, so a
+"70% to pass" rule would wrongly fail a passing score. The app compares correct
+answers against 47 and never derives pass/fail from a rounded percentage. This
+is covered by tests asserting that 47/68 passes, 46/68 fails, 68/68 passes, and
+that unanswered questions count as incorrect.
 
-- **Study Mode**: choose one or more exam sections, difficulty, question count, and sequential or randomized order.
-- **Mock Exam Mode**: `/mock-exam` simulates a 68-question, 90-minute exam session with no instant feedback.
-- **Dashboard**: `/dashboard` shows local progress analytics, weak tags, section accuracy, recent mock scores, and suggested next study section.
-- **Instant feedback**: Study Mode shows answer feedback, explanations, common mistakes, and related docs links.
-- **Review Mode**: retry incorrect questions, retry by section, tag, or difficulty, bookmark questions, and clear local progress.
-- **Resources Page**: curated official, API, Runtime, Sampler, Estimator, OpenQASM, community, practice, and slide references.
-- **Question validation**: `npm run validate:questions` checks the static question bank.
+Section weights (16/11/18/15/12/12/10/6) live in `src/config/exam.ts` and drive
+both the mock-exam composition and the per-section authoring targets by the
+largest-remainder method. Nothing else hard-codes a derived number, so if IBM
+changes the blueprint, that one file is the only place to edit.
 
-## Routes
+## The question bank
 
-| Path | Description |
-| --- | --- |
-| `/` | Landing page |
-| `/topics` | Section browser and Study Mode configuration |
-| `/quiz` | Study session with URL filters |
-| `/mock-exam` | Timed mock exam |
-| `/dashboard` | Local progress analytics |
-| `/resources` | Exam-prep references |
+<!-- BEGIN:BANK_SUMMARY -->
 
-## Study Mode
+**Total questions:** 321
 
-Study Mode supports:
+| Section | Title | Weight | Questions | Share |
+| --- | --- | --- | --- | --- |
+| 1 | Perform quantum operations | 16% | 51 | 16% |
+| 2 | Visualize quantum circuits, measurements, and states | 11% | 35 | 11% |
+| 3 | Create quantum circuits | 18% | 58 | 18% |
+| 4 | Run quantum circuits | 15% | 48 | 15% |
+| 5 | Use the sampler primitive | 12% | 39 | 12% |
+| 6 | Use the estimator primitive | 12% | 38 | 12% |
+| 7 | Retrieve and analyze the results of quantum circuits | 10% | 32 | 10% |
+| 8 | Operate with OpenQASM | 6% | 20 | 6% |
 
-- selecting one or more exam sections
-- difficulty filters: `all`, `easy`, `medium`, `hard`
-- question counts: `10`, `20`, `40`, or all matching questions
-- sequential or randomized order
-- retrying missed questions
-- tag-based and difficulty-based review links
-
-Query parameters on `/quiz`:
-
-| Parameter | Values | Default |
+| Difficulty | Questions | Share |
 | --- | --- | --- |
-| `sections` | comma-separated `1`-`8`, or omitted for all | all |
-| `difficulty` | `all`, `easy`, `medium`, `hard` | all |
-| `count` | `10`, `20`, `40`, `68`, or omitted for all | all |
-| `order` | `sequential`, `random` | sequential |
-| `tag` | exact question tag | none |
-| `retry` | comma-separated question IDs | none |
+| easy | 80 | 25% |
+| medium | 142 | 44% |
+| hard | 99 | 31% |
 
-Examples:
+| Question type | Questions | Share |
+| --- | --- | --- |
+| `code-behavior` | 94 | 29% |
+| `concept` | 62 | 19% |
+| `workflow-selection` | 36 | 11% |
+| `code-output` | 30 | 9% |
+| `debugging` | 27 | 8% |
+| `multi-step-reasoning` | 24 | 7% |
+| `result-interpretation` | 24 | 7% |
+| `code-completion` | 10 | 3% |
+| `documentation-navigation` | 8 | 2% |
+| `broadcasting-shape` | 6 | 2% |
 
-```text
-/quiz
-/quiz?sections=4&difficulty=medium&count=10
-/quiz?sections=5,6&order=random
-/quiz?tag=sampler-v2&count=10&order=random
-/quiz?retry=s5-001,s6-004
-```
+| Code status | Questions |
+| --- | --- |
+| `none` | 156 |
+| `illustrative` | 79 |
+| `executable` | 64 |
+| `intentional-error` | 12 |
+| `partial-completion` | 10 |
 
-## Mock Exam Mode
+**Code-based questions:** 165 of 321 (51%)
 
-`/mock-exam` uses:
+<!-- END:BANK_SUMMARY -->
 
-- 68 questions
-- 90 minutes
-- randomized question selection
-- balanced section coverage across the 8 C1000-179 sections
-- no instant feedback
-- question navigation
-- mark-for-review controls
-- auto-submit when time runs out
+Full breakdowns:
 
-After submission, the app shows:
+- [`docs/question-bank-audit.md`](docs/question-bank-audit.md) — what was wrong
+  before this release and the per-question audit
+- [`docs/exam-objective-coverage.md`](docs/exam-objective-coverage.md) — coverage
+  against the blueprint, by section and by concept
+- [`docs/qiskit-code-verification.md`](docs/qiskit-code-verification.md) — how
+  code snippets are executed and checked
+- [`docs/question-writing-guidelines.md`](docs/question-writing-guidelines.md) —
+  the rules, all of them enforced automatically
 
-- total score
-- percentage
-- pass/fail estimate
-- section-by-section performance
-- difficulty-by-difficulty performance
-- incorrect and unanswered questions
-- marked questions
-- explanations and documentation links
+## Answer integrity
 
-## Dashboard And Progress Persistence
+The app is built so that nothing visible before you answer can narrow the option
+set.
 
-Qisquiz currently stores progress in browser LocalStorage. There is no backend, database, or authentication yet.
+- Correctness is carried by a stable `correctChoiceId`, so the display order is
+  shuffled every session without any risk of mis-grading.
+- Study mode withholds tags, concept, objective, references, common mistakes,
+  and explanations until you answer.
+- The mock exam additionally hides section, difficulty, and question type until
+  the whole exam is submitted, because those labels narrow answers and are not
+  part of a realistic mixed sitting.
+- `npm run validate:questions` fails the build on answer leakage, including an
+  identifier that distinguishes the key appearing in the code, an import line,
+  or the metadata.
 
-Persisted data includes:
+## Your progress
 
-- answered question IDs
-- correct and incorrect history
-- missed questions
-- bookmarked questions
-- last selected section and difficulty
-- mock exam attempts
-- best and latest mock score
+Progress is stored in your browser's local storage under
+`qisquiz.studyProgress.v2`. There is no account, no server, and no telemetry.
 
-The persistence utilities live in [`src/lib/progress.ts`](src/lib/progress.ts). They are intentionally isolated so a database-backed implementation can replace LocalStorage later.
+Data written by an earlier version (`qisquiz.studyProgress.v1`) is migrated
+automatically on first load. Attempt counts, correct and incorrect tallies,
+bookmarks, mock attempts, and study preferences are all carried forward, and the
+v1 key is left in place so nothing is lost. One thing cannot be carried forward:
+v1 recorded which answer you picked as a position in a rotated list that no
+longer exists, so those are marked "recorded before this app tracked stable
+answer ids" rather than being reinterpreted as a different answer.
 
-## Question Bank Structure
+Clearing progress is explicit and never automatic.
 
-Question types are defined in [`src/types/quiz.ts`](src/types/quiz.ts). The static question bank lives in [`src/data/questions.ts`](src/data/questions.ts).
+The dashboard distinguishes figures that are easy to confuse:
 
-Each question supports:
+- **Unique questions attempted** versus **total attempts**, so repeats are visible.
+- **First-attempt accuracy** versus **all-attempt accuracy**, so retrying the
+  same question cannot inflate an apparent readiness score.
+- **Not attempted** versus **low accuracy**, which are different problems.
+- Weak areas are only named once at least five answers exist for them, and every
+  figure shows its sample size.
 
-- `id`
-- `section`
-- `sectionTitle`
-- `difficulty`
-- `question`
-- `code`
-- `choices`
-- `correctAnswerIndex`
-- `explanation`
-- `tags`
-- `examSkill`
-- `commonMistake`
-- `sourceReference`
-- `relatedDocsUrl`
-- `estimatedTimeSeconds`
-- `concept`
-- `objective`
-- `qiskitVersion`
-- `lastReviewedAt`
-
-The current bank is structured to scale toward 300-500 original questions.
-
-## Add Questions
-
-1. Read [`docs/question-writing-guidelines.md`](docs/question-writing-guidelines.md).
-2. Add original questions to [`src/data/questions.ts`](src/data/questions.ts).
-3. Prefer Qiskit v2.x APIs and official documentation links.
-4. Keep each question focused on one clear exam concept.
-5. Run validation:
+## Development
 
 ```bash
-npm run validate:questions
-```
-
-## Run Locally
-
-```bash
-git clone https://github.com/dorakingx/qisquiz.git
-cd qisquiz
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+| Command | What it does |
+| --- | --- |
+| `npm run validate:questions` | Question-quality gate: leakage, duplicates, references, coverage, diversity |
+| `npm run typecheck` | TypeScript |
+| `npm run lint` | ESLint |
+| `npm run test` | Unit tests (Vitest) |
+| `npm run test:e2e` | Browser tests (Playwright, desktop and mobile) |
+| `npm run build` | Production build |
+| `npm run check` | Every non-destructive release gate, in order |
+| `npm run docs:generate` | Regenerate the data-derived documentation tables |
+| `npm run export:snippets` | Dump code snippets for the Qiskit verifier |
 
-Other commands:
+CI runs the same gates on every pull request, plus the Qiskit snippet
+verification in a real Python environment.
+
+### Adding a question
+
+See [`docs/question-writing-guidelines.md`](docs/question-writing-guidelines.md)
+for the rules. In short: add a seed to the relevant
+`src/data/questions/section-N.ts` with the next free id, write distractors that
+a learner with a specific misconception would actually pick, refute the strong
+ones by name in the explanation, cite the exact documentation page, set
+`lastReviewedAt`, and run `npm run check`.
+
+Question ids and choice ids are permanent. Published ids are protected by a
+test, because stored progress refers to them; rewrite a bad question in place
+rather than deleting it.
+
+### Verifying Qiskit code
 
 ```bash
-npm run lint
-npm run validate:questions
-npm run build
-npm start
+python -m venv .venv-qiskit
+./.venv-qiskit/bin/pip install "qiskit[visualization]==2.*" qiskit-ibm-runtime
+npm run export:snippets -- snippets.json
+./.venv-qiskit/bin/python scripts/verify-qiskit-code.py snippets.json
 ```
 
-**Node.js:** Next.js 15 requires Node **>= 18.18**. Node **>= 20.9** is recommended for the current ESLint toolchain.
+Snippets marked `executable` are run and their output compared against the key.
+Everything else is syntax-checked or, for OpenQASM, parsed by Qiskit's importer.
+No credentials are used and no hardware job is ever submitted.
 
-## Exam Sections
+### After a Qiskit release
 
-1. Perform quantum operations
-2. Visualize quantum circuits, measurements, and states
-3. Create quantum circuits
-4. Run quantum circuits
-5. Use the Sampler primitive
-6. Use the Estimator primitive
-7. Retrieve and analyze results of quantum circuits
-8. Operate with OpenQASM
+Refresh the documentation URL snapshot, re-run the validator and the Qiskit
+verifier, update `qiskitVersion` and `lastReviewedAt` on anything re-checked,
+and re-read the official blueprint. The exact commands are in
+[`docs/question-writing-guidelines.md`](docs/question-writing-guidelines.md).
 
-Section metadata is defined in [`src/types/quiz.ts`](src/types/quiz.ts) as `EXAM_SECTIONS`.
+## Stack
 
-## Study References
-
-Qisquiz uses public references to identify concepts and APIs. The questions remain original.
-
-- [IBM certification page](https://www.ibm.com/training/certification/ibm-certified-quantum-computation-using-qiskit-v2x-developer-associate-C9008400)
-- [Qiskit documentation](https://docs.quantum.ibm.com/)
-- [Qiskit API reference](https://docs.quantum.ibm.com/api/qiskit)
-- [Sampler guide](https://docs.quantum.ibm.com/guides/sampler)
-- [Estimator guide](https://docs.quantum.ibm.com/guides/estimator)
-- [OpenQASM 3 interoperability](https://docs.quantum.ibm.com/guides/interoperate-qiskit-qasm3)
-- [Qiskit v2.X Certification Exam Tutorial](https://github.com/kibrahim757/qiskit_2x_certification_exam_tutorial)
-- [Qiskit Advocate-created practice exams](https://github.com/qiskit-advocate/qiskit-advocate-library/blob/main/advocate-resources/qiskit-cert-study-resources/advocate_created_practice_exams.md)
-
-## Project Structure
-
-```text
-src/
-  app/
-    dashboard/page.tsx
-    mock-exam/page.tsx
-    page.tsx
-    quiz/page.tsx
-    resources/page.tsx
-    topics/page.tsx
-  components/
-    Dashboard.tsx
-    MockExam.tsx
-    Quiz.tsx
-    QuizCard.tsx
-    ScoreSummary.tsx
-    TopicSelector.tsx
-  data/
-    questions.ts
-    resources.ts
-  lib/
-    progress.ts
-    quiz.ts
-  types/
-    quiz.ts
-docs/
-  question-writing-guidelines.md
-scripts/
-  validate-questions.mjs
-```
+Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS 4,
+prism-react-renderer. Vitest for unit tests, Playwright for browser tests.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT. See [LICENSE](LICENSE).

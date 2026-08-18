@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import { QUIZ_QUESTIONS } from "../../src/data/questions";
 
 const SESSION_KEY = "qisquiz.mockExamSession.v2";
-const PROGRESS_KEY = "qisquiz.studyProgress.v2";
 
 test.describe("mock exam", () => {
   // Each test gets a fresh browser context, so local storage starts empty.
@@ -33,12 +32,23 @@ test.describe("mock exam", () => {
     await page.getByTestId("start-exam").click();
     await page.getByTestId("answer-choices").getByRole("radio").nth(1).click();
 
+    // The click and the storage write are separate ticks, so poll rather than
+    // reading storage once.
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          (key) =>
+            Object.keys(JSON.parse(window.localStorage.getItem(key)!).answers).length,
+          SESSION_KEY,
+        ),
+      )
+      .toBe(1);
+
     const stored = await page.evaluate(
       (key) => JSON.parse(window.localStorage.getItem(key)!),
       SESSION_KEY,
     );
     expect(stored.questionIds).toHaveLength(68);
-    expect(Object.keys(stored.answers)).toHaveLength(1);
 
     await page.reload();
     await expect(page.getByTestId("resume-prompt")).toBeVisible();
