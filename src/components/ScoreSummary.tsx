@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
+import type { QuestionType, QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
+import { EXAM_SECTION_LIST } from "@/types/quiz";
 import { buildQuizUrl } from "@/lib/quiz";
 import { clearProgress } from "@/lib/progress";
-import { EXAM_SECTIONS } from "@/types/quiz";
+import { QuestionReview } from "./QuestionReview";
 
 type ScoreSummaryProps = {
   answers: QuizAnswer[];
@@ -23,6 +24,7 @@ export function ScoreSummary({
   const incorrect = total - correct;
   const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
 
+  const answerById = new Map(answers.map((answer) => [answer.questionId, answer]));
   const missedIds = new Set(
     answers.filter((a) => !a.isCorrect).map((a) => a.questionId),
   );
@@ -34,32 +36,32 @@ export function ScoreSummary({
   );
   const restartUrl = buildQuizUrl(studyConfig);
   const [progressCleared, setProgressCleared] = useState(false);
-  const sectionStats = EXAM_SECTIONS.map((section) => {
+
+  const sectionStats = EXAM_SECTION_LIST.map((section) => {
     const sectionQuestions = questions.filter((q) => q.section === section.number);
-    const sectionAnswers = answers.filter((answer) =>
-      sectionQuestions.some((q) => q.id === answer.questionId),
-    );
-    const sectionCorrect = sectionAnswers.filter((answer) => answer.isCorrect).length;
-    const sectionAccuracy =
-      sectionAnswers.length === 0
-        ? null
-        : Math.round((sectionCorrect / sectionAnswers.length) * 100);
+    const sectionIds = new Set(sectionQuestions.map((q) => q.id));
+    const sectionAnswers = answers.filter((answer) => sectionIds.has(answer.questionId));
+    const sectionCorrect = sectionAnswers.filter((a) => a.isCorrect).length;
     return {
       ...section,
       attempted: sectionAnswers.length,
       correct: sectionCorrect,
-      accuracy: sectionAccuracy,
+      accuracy:
+        sectionAnswers.length === 0
+          ? null
+          : Math.round((sectionCorrect / sectionAnswers.length) * 100),
     };
   }).filter((section) => section.attempted > 0);
-  const weakSections = sectionStats
-    .filter((section) => section.accuracy !== null && section.accuracy < 75)
-    .sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0));
+
   const missedTags = Array.from(
     new Set(missedQuestions.flatMap((question) => question.tags)),
   ).slice(0, 10);
   const missedDifficulties = Array.from(
     new Set(missedQuestions.map((question) => question.difficulty)),
   );
+  const missedTypes = Array.from(
+    new Set(missedQuestions.map((question) => question.questionType)),
+  ) as QuestionType[];
 
   function handleClearProgress() {
     clearProgress();
@@ -137,9 +139,10 @@ export function ScoreSummary({
 
       {missedQuestions.length > 0 ? (
         <section className="card">
-          <h3 className="text-lg font-semibold text-zinc-100">
-            Targeted retry
-          </h3>
+          <h3 className="text-lg font-semibold text-zinc-100">Targeted retry</h3>
+          <p className="mt-1 text-sm text-zinc-500">
+            Practise the areas this session flagged.
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {missedDifficulties.map((difficulty) => (
               <Link
@@ -156,6 +159,22 @@ export function ScoreSummary({
                 Retry {difficulty}
               </Link>
             ))}
+            {missedTypes.map((questionType) => (
+              <Link
+                key={questionType}
+                href={buildQuizUrl({
+                  mode: "section",
+                  sections: "all",
+                  difficulty: "all",
+                  count: 10,
+                  order: "random",
+                  questionType,
+                })}
+                className="rounded-lg border border-zinc-700 px-3 py-2 font-mono text-xs font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+              >
+                {questionType}
+              </Link>
+            ))}
             {missedTags.map((tag) => (
               <Link
                 key={tag}
@@ -167,7 +186,7 @@ export function ScoreSummary({
                   order: "random",
                   tag,
                 })}
-                className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
+                className="rounded-lg border border-zinc-700 px-3 py-2 font-mono text-xs font-semibold text-zinc-200 transition-colors hover:bg-zinc-800"
               >
                 {tag}
               </Link>
@@ -178,11 +197,10 @@ export function ScoreSummary({
 
       {sectionStats.length > 1 ? (
         <section className="card">
-          <h3 className="text-lg font-semibold text-zinc-100">
-            Weak-area review
-          </h3>
+          <h3 className="text-lg font-semibold text-zinc-100">Section breakdown</h3>
           <div className="mt-4 space-y-3">
             {sectionStats
+              .slice()
               .sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0))
               .map((section) => (
                 <div
@@ -194,7 +212,7 @@ export function ScoreSummary({
                       Section {section.number}: {section.title}
                     </p>
                     <p className="mt-1 text-xs text-zinc-500">
-                      {section.correct} / {section.attempted} correct
+                      {section.correct} / {section.attempted} correct in this session
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -223,11 +241,10 @@ export function ScoreSummary({
                 </div>
               ))}
           </div>
-          {weakSections.length === 0 ? (
-            <p className="mt-4 text-sm text-emerald-400">
-              No weak sections under 75% in this session.
-            </p>
-          ) : null}
+          <p className="mt-4 text-xs text-zinc-500">
+            Session percentages come from a small sample. The dashboard tracks
+            accuracy across all your sessions.
+          </p>
         </section>
       ) : null}
 
@@ -237,46 +254,15 @@ export function ScoreSummary({
             Review missed questions
           </h3>
           <ul className="space-y-4">
-            {missedQuestions.map((q) => {
-              const answer = answers.find((a) => a.questionId === q.id);
-              return (
-                <li key={q.id} className="card">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className="badge-section">Section {q.section}</span>
-                    <span className="text-xs text-zinc-500">{q.id}</span>
-                  </div>
-                  <p className="text-sm font-medium text-zinc-200">
-                    {q.question}
-                  </p>
-                  {answer !== undefined ? (
-                    <p className="mt-3 text-sm text-rose-400/90">
-                      Your answer: {q.choices[answer.selectedIndex] ?? "—"}
-                    </p>
-                  ) : null}
-                  <p className="mt-2 text-sm text-emerald-400/90">
-                    Correct answer: {q.choices[q.correctAnswerIndex]}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-                    {q.explanation}
-                  </p>
-                  {q.commonMistake ? (
-                    <p className="mt-3 text-sm leading-relaxed text-amber-300/90">
-                      Common mistake: {q.commonMistake}
-                    </p>
-                  ) : null}
-                  {q.relatedDocsUrl ? (
-                    <a
-                      href={q.relatedDocsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-block text-xs font-medium text-accent hover:underline"
-                    >
-                      Open related docs
-                    </a>
-                  ) : null}
-                </li>
-              );
-            })}
+            {missedQuestions.map((question) => (
+              <QuestionReview
+                key={question.id}
+                question={question}
+                selectedChoiceId={
+                  answerById.get(question.id)?.selectedChoiceId ?? null
+                }
+              />
+            ))}
           </ul>
         </section>
       ) : (

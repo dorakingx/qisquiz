@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { QUIZ_QUESTIONS } from "@/data/questions";
+import { isCodeQuestion } from "@/types/quiz";
 
-const codeQuestionCount = QUIZ_QUESTIONS.filter((q) => q.code).length;
+const codeQuestionCount = QUIZ_QUESTIONS.filter(isCodeQuestion).length;
 const hardQuestionCount = QUIZ_QUESTIONS.filter(
   (q) => q.difficulty === "hard",
 ).length;

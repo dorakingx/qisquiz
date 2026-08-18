@@ -1,19 +1,21 @@
-import type { QuizAnswer, QuizQuestion, StudyConfig } from "@/types/quiz";
-
-const MOCK_EXAM_SECTION_TARGETS: Record<number, number> = {
-  1: 11,
-  2: 8,
-  3: 12,
-  4: 10,
-  5: 8,
-  6: 8,
-  7: 7,
-  8: 4,
-};
+import {
+  EXAM_TOTAL_QUESTIONS,
+  MOCK_EXAM_SECTION_TARGETS,
+} from "@/config/exam";
+import type {
+  ChoiceId,
+  PresentedQuestion,
+  QuestionType,
+  QuizAnswer,
+  QuizQuestion,
+  StudyConfig,
+} from "@/types/quiz";
+import { QUESTION_TYPES } from "@/types/quiz";
+import { createRandom, shuffleForKey, shuffleRandom, shuffleWith } from "./shuffle";
 
 export function filterQuestions(
   questions: QuizQuestion[],
-  config: Pick<StudyConfig, "sections" | "difficulty" | "tag">,
+  config: Pick<StudyConfig, "sections" | "difficulty" | "tag" | "questionType">,
 ): QuizQuestion[] {
   return questions.filter((q) => {
     if (config.sections !== "all" && !config.sections.includes(q.section)) {
@@ -23,6 +25,9 @@ export function filterQuestions(
       return false;
     }
     if (config.tag && !q.tags.includes(config.tag)) {
+      return false;
+    }
+    if (config.questionType && q.questionType !== config.questionType) {
       return false;
     }
     return true;
@@ -39,13 +44,7 @@ export function orderQuestions(
       return a.id.localeCompare(b.id);
     });
   }
-
-  const shuffled = [...questions];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
+  return shuffleRandom(questions);
 }
 
 function limitQuestions(
@@ -56,34 +55,47 @@ function limitQuestions(
   return questions.slice(0, count);
 }
 
-function sampleQuestions(
-  questions: QuizQuestion[],
-  count: number,
+/**
+ * Build one mock-exam session: exactly EXAM_TOTAL_QUESTIONS unique questions,
+ * distributed across sections according to the official blueprint weights.
+ *
+ * The source bank is never mutated.
+ */
+export function buildMockExamSession(
+  questions: readonly QuizQuestion[],
+  seed?: number,
 ): QuizQuestion[] {
-  return orderQuestions(questions, "random").slice(0, count);
-}
-
-function buildMockExamSession(questions: QuizQuestion[]): QuizQuestion[] {
+  const random = seed === undefined ? Math.random : createRandom(seed);
   const selected: QuizQuestion[] = [];
   const selectedIds = new Set<string>();
 
-  for (const [sectionValue, target] of Object.entries(
-    MOCK_EXAM_SECTION_TARGETS,
-  )) {
-    const section = Number.parseInt(sectionValue, 10);
-    const sectionQuestions = questions.filter((q) => q.section === section);
-    for (const question of sampleQuestions(sectionQuestions, target)) {
+  const sectionNumbers = Object.keys(MOCK_EXAM_SECTION_TARGETS)
+    .map((value) => Number.parseInt(value, 10))
+    .sort((a, b) => a - b);
+
+  for (const section of sectionNumbers) {
+    const target = MOCK_EXAM_SECTION_TARGETS[section];
+    const pool = questions.filter((q) => q.section === section);
+    for (const question of shuffleWith(pool, random).slice(0, target)) {
       selected.push(question);
       selectedIds.add(question.id);
     }
   }
 
-  if (selected.length < 68) {
+  // If a section is short of its target, top up from the rest of the bank so a
+  // sitting always has the official question count.
+  if (selected.length < EXAM_TOTAL_QUESTIONS) {
     const remaining = questions.filter((q) => !selectedIds.has(q.id));
-    selected.push(...sampleQuestions(remaining, 68 - selected.length));
+    for (const question of shuffleWith(remaining, random).slice(
+      0,
+      EXAM_TOTAL_QUESTIONS - selected.length,
+    )) {
+      selected.push(question);
+      selectedIds.add(question.id);
+    }
   }
 
-  return orderQuestions(selected.slice(0, 68), "random");
+  return shuffleWith(selected.slice(0, EXAM_TOTAL_QUESTIONS), random);
 }
 
 export function buildQuizSession(
@@ -103,6 +115,55 @@ export function buildQuizSession(
 
   const filtered = filterQuestions(questions, config);
   return limitQuestions(orderQuestions(filtered, config.order), config.count);
+}
+
+/**
+ * Present a question with a shuffled display order.
+ *
+ * Correctness is carried by `correctChoiceId`, so shuffling the display order
+ * can never change which answer is right. Passing a seed makes the order
+ * reproducible for a saved exam attempt.
+ */
+export function presentQuestion(
+  question: QuizQuestion,
+  seed?: number,
+): PresentedQuestion {
+  const displayChoices =
+    seed === undefined
+      ? shuffleRandom(question.choices)
+      : shuffleForKey(question.choices, seed, question.id);
+  return { question, displayChoices };
+}
+
+export function presentQuestions(
+  questions: QuizQuestion[],
+  seed?: number,
+): PresentedQuestion[] {
+  return questions.map((question) => presentQuestion(question, seed));
+}
+
+/** Restore a saved display order from stored choice ids. */
+export function presentWithOrder(
+  question: QuizQuestion,
+  order: ChoiceId[],
+): PresentedQuestion {
+  const byId = new Map(question.choices.map((choice) => [choice.id, choice]));
+  const displayChoices = order
+    .map((id) => byId.get(id))
+    .filter((choice): choice is NonNullable<typeof choice> => Boolean(choice));
+
+  // Guard against a stored order that no longer matches the question.
+  if (displayChoices.length !== question.choices.length) {
+    return { question, displayChoices: [...question.choices] };
+  }
+  return { question, displayChoices };
+}
+
+export function isCorrectChoice(
+  question: QuizQuestion,
+  choiceId: ChoiceId | null,
+): boolean {
+  return choiceId !== null && choiceId === question.correctChoiceId;
 }
 
 export function getMissedQuestions(
@@ -140,12 +201,19 @@ export function parseStudyConfig(searchParams: URLSearchParams): StudyConfig {
   const order = orderParam === "random" ? "random" : "sequential";
   const tag = searchParams.get("tag") ?? undefined;
 
-  const countParam = searchParams.get("count") ?? (mode === "mock" ? "68" : "all");
+  const typeParam = searchParams.get("type");
+  const questionType =
+    typeParam && QUESTION_TYPES.includes(typeParam as QuestionType)
+      ? (typeParam as QuestionType)
+      : undefined;
+
+  const countParam =
+    searchParams.get("count") ?? (mode === "mock" ? String(EXAM_TOTAL_QUESTIONS) : "all");
   let count: StudyConfig["count"] = "all";
   if (countParam === "10") count = 10;
   if (countParam === "20") count = 20;
   if (countParam === "40") count = 40;
-  if (countParam === "68") count = 68;
+  if (countParam === String(EXAM_TOTAL_QUESTIONS)) count = EXAM_TOTAL_QUESTIONS as 68;
 
   return {
     mode,
@@ -154,6 +222,7 @@ export function parseStudyConfig(searchParams: URLSearchParams): StudyConfig {
     count,
     order,
     tag,
+    questionType,
   };
 }
 
@@ -163,10 +232,7 @@ export function parseRetryIds(searchParams: URLSearchParams): string[] {
   return retry.split(",").filter(Boolean);
 }
 
-export function buildQuizUrl(
-  config: StudyConfig,
-  retryIds?: string[],
-): string {
+export function buildQuizUrl(config: StudyConfig, retryIds?: string[]): string {
   const params = new URLSearchParams();
   if (config.mode !== "section") {
     params.set("mode", config.mode);
@@ -185,6 +251,9 @@ export function buildQuizUrl(
   }
   if (config.tag) {
     params.set("tag", config.tag);
+  }
+  if (config.questionType) {
+    params.set("type", config.questionType);
   }
   if (retryIds && retryIds.length > 0) {
     params.set("retry", retryIds.join(","));
