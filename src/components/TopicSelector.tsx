@@ -6,7 +6,7 @@ import { QUIZ_QUESTIONS } from "@/data/questions";
 import { buildQuizUrl, countQuestionsBySection } from "@/lib/quiz";
 import { loadProgress } from "@/lib/progress";
 import type { Difficulty, StudyConfig } from "@/types/quiz";
-import { EXAM_SECTIONS } from "@/types/quiz";
+import { EXAM_SECTION_LIST as EXAM_SECTIONS } from "@/types/quiz";
 
 const sectionCounts = countQuestionsBySection(QUIZ_QUESTIONS);
 
@@ -187,8 +187,9 @@ export function TopicSelector() {
               Full mock exam
             </h2>
             <p className="mt-1 text-sm text-zinc-400">
-              68 randomized questions across all eight sections, matching the
-              official exam length.
+              68 questions in 90 minutes, weighted to the official C1000-179
+              blueprint. Section and difficulty labels stay hidden until you
+              submit.
             </p>
           </div>
           <button

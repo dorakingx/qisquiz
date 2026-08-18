@@ -7,7 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "validate:questions": "node scripts/validate-questions.mjs"
+    "typecheck": "tsc --noEmit",
+    "validate:questions": "tsx scripts/validate-questions.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check": "npm run validate:questions && npm run typecheck && npm run lint && npm run test && npm run build",
+    "export:snippets": "tsx scripts/export-snippets.ts",
+    "docs:generate": "tsx scripts/generate-docs.ts"
   },
   "dependencies": {
     "next": "^15.5.18",
@@ -17,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -24,6 +32,8 @@
     "eslint": "^9",
     "eslint-config-next": "^15.5.18",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.12",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

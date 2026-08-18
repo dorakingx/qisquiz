@@ -50,7 +50,16 @@ function QuizSession() {
           {studyConfig.order === "random" ? " · randomized" : ""}
         </p>
       </header>
-      <Quiz questions={questions} studyConfig={studyConfig} />
+      {/*
+        Keyed by the query string: navigating from a score summary to a retry
+        URL keeps the same component instance, so without a key the finished
+        state and previous answers would carry over into the new session.
+      */}
+      <Quiz
+        key={searchParams.toString()}
+        questions={questions}
+        studyConfig={studyConfig}
+      />
     </div>
   );
 }
