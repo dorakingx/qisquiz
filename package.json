@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "check": "npm run validate:questions && npm run typecheck && npm run lint && npm run test && npm run build"
+    "check": "npm run validate:questions && npm run typecheck && npm run lint && npm run test && npm run build",
+    "export:snippets": "tsx scripts/export-snippets.ts"
   },
   "dependencies": {
     "next": "^15.5.18",

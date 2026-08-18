@@ -131,7 +131,7 @@ export function Dashboard() {
         </button>
       </header>
 
-      {stats.totalAttempts === 0 ? (
+      {stats.totalAttempts === 0 && progress.mockExamAttempts.length === 0 ? (
         <section className="card text-center">
           <h2 className="text-lg font-semibold text-zinc-100">No progress yet</h2>
           <p className="mt-2 text-sm text-zinc-400">

@@ -91,9 +91,10 @@ export const SECTION_1_QUESTIONS = defineSection(
       id: "s1-004",
       difficulty: "easy",
       type: "code-output",
-      question: "What amplitudes does this program print?",
+      question:
+        "What are the two amplitudes of the resulting state, in array order?",
       code:
-        "from qiskit import QuantumCircuit\nfrom qiskit.quantum_info import Statevector\n\nqc = QuantumCircuit(1)\nqc.x(0)\nqc.z(0)\nprint(Statevector(qc).data)",
+        "from qiskit import QuantumCircuit\nfrom qiskit.quantum_info import Statevector\n\nqc = QuantumCircuit(1)\nqc.x(0)\nqc.z(0)\nsv = Statevector(qc)",
       codeStatus: "executable",
       choices: {
         a: "[0, -1]",
@@ -481,19 +482,20 @@ export const SECTION_1_QUESTIONS = defineSection(
       id: "s1-021",
       difficulty: "easy",
       type: "code-output",
-      question: "What does this program print?",
+      question:
+        "Which computational-basis label carries all of the probability here?",
       code:
         "from qiskit import QuantumCircuit\nfrom qiskit.quantum_info import Statevector\n\nqc = QuantumCircuit(3)\nqc.x(1)\nprint(Statevector(qc).probabilities_dict())",
       codeStatus: "executable",
       choices: {
-        a: "{'010': 1.0}",
-        b: "{'100': 1.0}",
-        c: "{'001': 1.0}",
-        d: "{'011': 1.0}",
+        a: "010",
+        b: "100",
+        c: "001",
+        d: "011",
       },
       answer: "a",
       explanation:
-        "Only qubit 1 is flipped, and the printed label places the highest-index qubit leftmost, so the excited qubit sits in the middle position, giving 010. The label 100 would mean qubit 2 was excited and 001 would mean qubit 0 was, both of which reverse or shift the convention, while 011 would require two qubits to be flipped.",
+        "Only qubit 1 is flipped, and labels place the highest-index qubit leftmost, so the excited qubit sits in the middle position, giving 010. The label 100 would mean qubit 2 was excited and 001 would mean qubit 0 was, both of which shift or reverse the convention, while 011 would require two qubits to be flipped rather than one.",
       mistake: "Writing basis labels with qubit 0 on the left.",
       tags: ["statevector", "little-endian", "probabilities"],
       concept: "Probability dictionaries and label order",

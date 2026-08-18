@@ -289,7 +289,7 @@ export const SECTION_4_QUESTIONS = defineSection(
         "What does running a workload this way let you do before touching real hardware?",
       code:
         "from qiskit_ibm_runtime import SamplerV2 as Sampler\nfrom qiskit_ibm_runtime.fake_provider import FakeAlgiers\n\nsampler = Sampler(mode=FakeAlgiers())\njob = sampler.run([(isa,)])",
-      codeStatus: "executable",
+      codeStatus: "illustrative",
       choices: {
         a: "Exercise the same primitive interface locally, against a snapshot of a real device",
         b: "Reserve a window of hardware time in advance of the real run",

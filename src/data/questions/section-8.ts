@@ -201,6 +201,7 @@ export const SECTION_8_QUESTIONS = defineSection(
         "What does this declaration establish?",
       code: "qubit[4] q;\nbit[4] c;",
       codeStatus: "illustrative",
+      language: "openqasm",
       choices: {
         a: "A four-qubit array and a separate four-bit classical array, indexed independently",
         b: "Four qubits that are automatically measured into the bits",

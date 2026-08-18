@@ -89,6 +89,24 @@ export function codeLikeTokens(value: string): string[] {
   return Array.from(tokens);
 }
 
+/**
+ * A wider notion of "identifier-shaped": anything that could be an API name,
+ * including a single capitalized word such as `Parameter` or `Session`. Used
+ * only for stems that explicitly ask the learner to *name* something, where a
+ * false positive is cheap and a miss is a real leak.
+ */
+export function identifierShapedTokens(value: string): string[] {
+  const tokens = new Set<string>();
+  for (const match of value.matchAll(/[A-Za-z_][A-Za-z0-9_.]{2,}/g)) {
+    const token = match[0].replace(/\.$/, "");
+    if (token.length < 4) continue;
+    if (/[_.]/.test(token) || /^[A-Z]/.test(token) || /[a-z][A-Z]/.test(token)) {
+      tokens.add(token);
+    }
+  }
+  return Array.from(tokens);
+}
+
 export function trigrams(value: string): Set<string> {
   const normalized = normalizeText(value).replace(/ /g, " ");
   const result = new Set<string>();
@@ -216,7 +234,7 @@ export function findAnswerLeaks(question: QuizQuestion): QualityIssue[] {
 
   // Naming questions must not display the thing being named at all.
   if (asksToNameAnIdentifier(question) && question.code) {
-    for (const token of codeLikeTokens(correct.text)) {
+    for (const token of identifierShapedTokens(correct.text)) {
       if (
         question.code.toLowerCase().includes(token.toLowerCase()) &&
         !question.choices
@@ -228,7 +246,11 @@ export function findAnswerLeaks(question: QuizQuestion): QualityIssue[] {
         issues.push(
           issue(
             question.id,
-            "ANSWER_IDENTIFIER_IN_CODE",
+            codeImportLines(question.code).some((line) =>
+              line.toLowerCase().includes(token.toLowerCase()),
+            )
+              ? "ANSWER_IDENTIFIER_IN_IMPORT"
+              : "ANSWER_IDENTIFIER_IN_CODE",
             "error",
             `The stem asks the learner to name an element, and "${token}" from the correct answer is shown in the code.`,
           ),
